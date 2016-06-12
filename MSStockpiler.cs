@@ -2,6 +2,7 @@
 using System.IO;
 using System.Collections.Generic;
 using System.Linq;
+using FortressCraft.Community;
 
 
 public class MSStockpiler : MachineEntity
@@ -78,8 +79,8 @@ public class MSStockpiler : MachineEntity
         ItemBase itemtostock = this.GetCurrentHotBarItemOrCubeAsItem(out lnAvailable, false);
 
         //Hack code to give mCarriedItem
-        if (Input.GetKey(KeyCode.RightAlt))
-            this.mCarriedItem = itemtostock;
+        //if (Input.GetKey(KeyCode.RightAlt))
+        //    this.mCarriedItem = itemtostock;
 
         if (this.mAttachedCrate == null)
         {
@@ -98,10 +99,10 @@ public class MSStockpiler : MachineEntity
             }
             //Check assigned Item for stocking and display status
             if (this.ItemToStock != null)
-                lstr2 = !WorldScript.mLocalPlayer.mResearch.IsKnown(this.ItemToStock) ? "\nCurrently stocking : Unknown Material" : "\nCurrently stocking : " + ItemManager.GetItemName(this.ItemToStock);
+                lstr2 = !WorldScript.mLocalPlayer.mResearch.IsKnown(this.ItemToStock) ? "Currently stocking : Unknown Material" : "Currently stocking : " + ItemManager.GetItemName(this.ItemToStock);
             //Check current hotbar item and display ability to set stockpile target
             lstr3 = itemtostock != null ? (!WorldScript.mLocalPlayer.mResearch.IsKnown(itemtostock) ? lstr2 + "\nPress T to set Stockpile target to Unknown Material" : lstr2 + "\nPress T to set Stockpile target to " + ItemManager.GetItemName(itemtostock)) : (this.ItemToStock != null ? lstr2 + "\nPress T to clear Stockpile target" : lstr2 + "\nSelect an item in your Hotbar to set Stockpile target");
-            if (Input.GetButton("Store") && MSStockpilerWindow.SetItemToStock(WorldScript.mLocalPlayer, this, itemtostock) && this.PopupDebounce < 0 && UIManager.AllowInteracting)
+            if (Input.GetButtonDown("Store") && MSStockpilerWindow.SetItemToStock(WorldScript.mLocalPlayer, this, itemtostock) && this.PopupDebounce < 0 && UIManager.AllowInteracting)
             {
                 if (itemtostock == null)
                 {
@@ -119,21 +120,21 @@ public class MSStockpiler : MachineEntity
             {
                 int amount = 0;
                 lstr4 = "\nStockpile quantity: " + this.CurrentStock + "/" + this.QuantityToStock + "\nUse (E/Q) to change stockpile quantity by ";
-                if (Input.GetKey(KeyCode.LeftShift))
+                if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
+                    amount = 100;
+                else if (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl))
                     amount = 10;
-                else if (Input.GetKey(KeyCode.LeftControl))
-                    amount = 1;
-                else if (Input.GetKey(KeyCode.LeftAlt))
+                else if (Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.RightAlt))
                     amount = 1000;
                 else
-                    amount = 100;
-                lstr4 += amount + "\n(Try Ctrl, Shift, and Alt!)";
-                if (this.PopupDebounce < 0 && Input.GetButton("Interact") && UIManager.AllowInteracting)
+                    amount = 1;
+                lstr4 += amount;
+                if (this.PopupDebounce < 0 && Input.GetButtonDown("Interact") && UIManager.AllowInteracting)
                 {
                     MSStockpilerWindow.SetStockpile(WorldScript.mLocalPlayer, port, this.QuantityToStock + amount);
                     this.PopupDebounce = 0.3f;
                 }
-                if (this.PopupDebounce < 0 && Input.GetButton("Extract") && UIManager.AllowInteracting)
+                if (this.PopupDebounce < 0 && Input.GetButtonDown("Extract") && UIManager.AllowInteracting)
                 {
                     MSStockpilerWindow.SetStockpile(WorldScript.mLocalPlayer, port, this.QuantityToStock - amount);
                     this.PopupDebounce = 0.3f;
@@ -160,27 +161,27 @@ public class MSStockpiler : MachineEntity
             if (lItem == null)
                 Debug.Log((object)"MSOP Cleared itemtostock");
         }
-        else if (lItem.mType == ItemType.ItemCubeStack)
-        {
-            if (this.ItemToStock.mType == ItemType.ItemCubeStack)
-            {
-                if ((int)(lItem as ItemCubeStack).mCubeType == (int)(this.ItemToStock as ItemCubeStack).mCubeType)
-                    return;
-                //this.mbHoloPreviewDirty = true;
-                Debug.Log((object)"MSOP Set itemtostock to different CubeStack type");
-            }
-            else
-            {
-                //this.mbHoloPreviewDirty = true;
-                Debug.Log((object)"MSOP Set itemtostock to CubeStack type");
-            }
-        }
+        //else if (lItem.mType == ItemType.ItemCubeStack)
+        //{
+        //    if (this.ItemToStock.mType == ItemType.ItemCubeStack)
+        //    {
+        //        if ((int)(lItem as ItemCubeStack).mCubeType == (int)(this.ItemToStock as ItemCubeStack).mCubeType)
+        //            return;
+        //        //this.mbHoloPreviewDirty = true;
+        //        Debug.Log((object)"MSOP Set itemtostock to different CubeStack type");
+        //    }
+        //    else
+        //    {
+        //        //this.mbHoloPreviewDirty = true;
+        //        Debug.Log((object)"MSOP Set itemtostock to CubeStack type");
+        //    }
+        //}
         else
         {
             if (lItem.mnItemID == this.ItemToStock.mnItemID)
                 return;
             //this.mbHoloPreviewDirty = true;
-            Debug.Log((object)("MSOP Set itemtostock to " + ItemManager.GetItemName(lItem.mnItemID)));
+            //Debug.Log((object)("MSOP Set itemtostock to " + ItemManager.GetItemName(lItem.mnItemID)));
         }
         this.ItemToStock = lItem;
         MSStockpiler port = (MSStockpiler)WorldScript.instance.localPlayerInstance.mPlayerBlockPicker.selectedEntity;
@@ -195,18 +196,19 @@ public class MSStockpiler : MachineEntity
             this.QuantityToStock = 0;
     }
 
-    private bool IsCrateCloseEnough(MassStorageCrate lCrate)
-    {
-        return (double)new Vector3((float)this.mnX - (float)lCrate.mnX, (float)this.mnY - (float)lCrate.mnY, (float)this.mnZ - (float)lCrate.mnZ).sqrMagnitude < (double)this.mrMaxSearchDistance * (double)this.mrMaxSearchDistance;
-    }
-
     public override void LowFrequencyUpdate()
     {
         this.StockRefresh -= LowFrequencyThread.mrPreviousUpdateTimeStep;
+
+        if (this.mCarriedItem == null)
+            this.mCarriedItem = this.TakeFromSurrounding();
+
         if (this.meState == MSStockpiler.eState.Unknown)
             this.SetNewState(MSStockpiler.eState.LookingForAttachedStorage);
         if (this.meState == MSStockpiler.eState.LookingForAttachedStorage)
             this.LookForAttachedStorage();
+        if (this.meState == MSStockpiler.eState.AwaitingForLowStock && this.ItemToStock == null)
+            this.SetNewState(eState.Idling);
         if (this.mAttachedCrate == null)
         {
             this.SetNewState(MSStockpiler.eState.LookingForAttachedStorage);
@@ -292,12 +294,15 @@ public class MSStockpiler : MachineEntity
                 if (this.mAttachedCrate.GetCenter() == null)
                     return;
                 //Carried item is the Item to stock, don't overfill
-                if (ItemOrCubeCompare(this.mCarriedItem, this. ItemToStock))
+                if (this.ItemToStock != null)
                 {
-                    if (this.CurrentStock >= this.QuantityToStock)
+                    if (ItemOrCubeCompare(this.mCarriedItem, this.ItemToStock))
                     {
-                        this.meState = MSStockpiler.eState.AwaitingForLowStock;
-                        return;
+                        if (this.CurrentStock >= this.QuantityToStock)
+                        {
+                            this.meState = MSStockpiler.eState.AwaitingForLowStock;
+                            return;
+                        }
                     }
                 }
                 int count = this.mAttachedCrate.GetCenter().mConnectedCrates.Count;
@@ -314,7 +319,7 @@ public class MSStockpiler : MachineEntity
                         IndexedDistances = null;
                         return;
                     }
-                    if (crateindex == count + 1)
+                    if (crateindex == count)
                     {
                         if (this.AssignTargetCrateIfFree(this.mAttachedCrate.GetCenter()))
                             return;
@@ -389,11 +394,14 @@ public class MSStockpiler : MachineEntity
         int foundcount = 0;
         bool SearchByCube = false;
         int idcheck = 0;
+        ushort valcheck = 0;
         
         if (this.ItemToStock.mType == ItemType.ItemCubeStack)
         {
             SearchByCube = true;
-            idcheck = (int)(this.ItemToStock as ItemCubeStack).mCubeType;
+            ItemCubeStack stockeditem = (this.ItemToStock as ItemCubeStack);
+            idcheck = (int)stockeditem.mCubeType;
+            valcheck = stockeditem.mCubeValue;
         }
         else
             idcheck = this.ItemToStock.mnItemID;
@@ -419,7 +427,8 @@ public class MSStockpiler : MachineEntity
                         if (SearchByCube && pickeditem.mType == ItemType.ItemCubeStack)
                         {
                             //Debug.Log("in loop item: " + pickeditem + " " + (pickeditem as ItemCubeStack).mCubeType);
-                            if ((int)(pickeditem as ItemCubeStack).mCubeType == idcheck)
+                            ItemCubeStack pickedcubestack = (pickeditem as ItemCubeStack);
+                            if ((int)pickedcubestack.mCubeType == idcheck && pickedcubestack.mCubeValue == valcheck)
                                 foundcount++;
                         }
                         else if (pickeditem.mnItemID == idcheck)

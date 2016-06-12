@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-
-public abstract class MSStockpilerWindow
+﻿public abstract class MSStockpilerWindow
 {
     public const string InterfaceName = "MSStockpilerWindow";
     public const string InterfaceSetItemToStock = "SetItemToStock";
