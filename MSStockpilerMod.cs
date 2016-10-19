@@ -11,7 +11,9 @@ public class MSStockpilerMod : FortressCraftMod
         modRegistrationData.RegisterEntityHandler("steveman0.MSStockpiler");
 
 
-        Debug.Log("Mass Storage Stockpiler Port Mod V1.2 registered");
+        Debug.Log("Mass Storage Stockpiler Port Mod V10 registered");
+
+        UIManager.NetworkCommandFunctions.Add("MSStockpilerWindow", new UIManager.HandleNetworkCommand(MSStockpilerWindow.HandleNetworkCommand));
 
         return modRegistrationData;
     }
