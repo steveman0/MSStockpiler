@@ -5,7 +5,7 @@ using System;
 
 public class MSStockpilerWindow : BaseMachineWindow
 {
-    public const string InterfaceName = "MSStockpilerWindow";
+    public const string InterfaceName = "steveman0.MSStockpilerWindow";
     public const string InterfaceSetItemToStock = "SetItemToStock";
     public const string InterfaceSetStockpile = "SetStockpile";
     public const string InterfaceInventoryLock = "InventoryLock";
@@ -24,15 +24,13 @@ public class MSStockpilerWindow : BaseMachineWindow
 
         if (port == null)
         {
-            GenericMachinePanelScript.instance.Hide();
+            //GenericMachinePanelScript.instance.Hide();
             UIManager.RemoveUIRules("Machine");
             return;
         }
-        UIUtil.UIdelay = 0;
-        UIUtil.UILock = true;
-
+        //UIUtil.UIdelay = 0;
+        //UIUtil.UILock = true;
         this.manager.SetTitle("Mass Storage Stockpiler");
-
 
         if (!ItemSearch)
         {
@@ -79,7 +77,7 @@ public class MSStockpilerWindow : BaseMachineWindow
             UIManager.RemoveUIRules("Machine");
             return;
         }
-        UIUtil.UIdelay = 0;
+        //UIUtil.UIdelay = 0;
 
         if (networkredraw)
         {
@@ -224,7 +222,7 @@ public class MSStockpilerWindow : BaseMachineWindow
             int stockpile = port.QuantityToStock + amount;
             port.SetStockpile(stockpile);
             if (!WorldScript.mbIsServer)
-                NetworkManager.instance.SendInterfaceCommand("MSStockpilerWindow", "SetStockpile", stockpile.ToString(), (ItemBase)null, (SegmentEntity)port, 0.0f);
+                NetworkManager.instance.SendInterfaceCommand(InterfaceName, InterfaceSetStockpile, stockpile.ToString(), (ItemBase)null, (SegmentEntity)port, 0.0f);
             dirty = true;
             return true;
         }
@@ -240,7 +238,7 @@ public class MSStockpilerWindow : BaseMachineWindow
             int stockpile = port.QuantityToStock - amount;
             port.SetStockpile(stockpile);
             if (!WorldScript.mbIsServer)
-                NetworkManager.instance.SendInterfaceCommand("MSStockpilerWindow", "SetStockpile", stockpile.ToString(), (ItemBase)null, (SegmentEntity)port, 0.0f);
+                NetworkManager.instance.SendInterfaceCommand(InterfaceName, InterfaceSetStockpile, stockpile.ToString(), (ItemBase)null, (SegmentEntity)port, 0.0f);
             dirty = true;
             return true;
         }
@@ -314,7 +312,7 @@ public class MSStockpilerWindow : BaseMachineWindow
         port.MarkDirtyDelayed();
         networkredraw = true;
         if (!WorldScript.mbIsServer)
-            NetworkManager.instance.SendInterfaceCommand("MSStockpilerWindow", "SetItemToStock", (string)null, itemtostock, (SegmentEntity)port, 0.0f);
+            NetworkManager.instance.SendInterfaceCommand(InterfaceName, InterfaceSetItemToStock, (string)null, itemtostock, (SegmentEntity)port, 0.0f);
         return true;
     }
 
@@ -324,7 +322,7 @@ public class MSStockpilerWindow : BaseMachineWindow
         port.MarkDirtyDelayed();
         dirty = true;
         if (!WorldScript.mbIsServer)
-            NetworkManager.instance.SendInterfaceCommand("MSStockpilerWindow", "SetStockpile", stockpile.ToString(), (ItemBase)null, (SegmentEntity)port, 0.0f);
+            NetworkManager.instance.SendInterfaceCommand(InterfaceName, InterfaceSetStockpile, stockpile.ToString(), (ItemBase)null, (SegmentEntity)port, 0.0f);
         return true;
     }
 
@@ -334,7 +332,7 @@ public class MSStockpilerWindow : BaseMachineWindow
         port.MarkDirtyDelayed();
         dirty = true;
         if (!WorldScript.mbIsServer)
-            NetworkManager.instance.SendInterfaceCommand("MSStockpilerWindow", "InventoryLock", locksetting ? "true" : "false", (ItemBase)null, (SegmentEntity)port, 0.0f);
+            NetworkManager.instance.SendInterfaceCommand(InterfaceName, InterfaceInventoryLock, locksetting ? "true" : "false", (ItemBase)null, (SegmentEntity)port, 0.0f);
         return true;
     }
 
@@ -344,17 +342,17 @@ public class MSStockpilerWindow : BaseMachineWindow
         string key = nic.command;
         if (key != null)
         {
-            if (key == "SetItemToStock")
+            if (nic.command == InterfaceSetItemToStock)
             {
                 MSStockpilerWindow.SetItemToStock(player, port, nic.itemContext);
             }
-            else if (key == "SetStockpile")
+            else if (key == InterfaceSetStockpile)
             {
                 int stockpile;
                 if (int.TryParse(nic.payload ?? "0", out stockpile))
                     MSStockpilerWindow.SetStockpile(player, port, stockpile);
             }
-            else if (key == "InventoryLock")
+            else if (key == InterfaceInventoryLock)
             {
                 MSStockpilerWindow.InventoryLock(player, port, nic.payload == "true");
             }

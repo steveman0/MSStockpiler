@@ -4,16 +4,17 @@ using UnityEngine;
 
 public class MSStockpilerMod : FortressCraftMod
 {
+    public ushort StockpilerType = ModManager.mModMappings.CubesByKey["steveman0.MSStockpiler"].CubeType;
 
     public override ModRegistrationData Register()
     {
         ModRegistrationData modRegistrationData = new ModRegistrationData();
         modRegistrationData.RegisterEntityHandler("steveman0.MSStockpiler");
+        modRegistrationData.RegisterEntityUI("steveman0.MSStockpiler", new MSStockpilerWindow());
 
+        Debug.Log("Mass Storage Stockpiler Port Mod V11 registered");
 
-        Debug.Log("Mass Storage Stockpiler Port Mod V10 registered");
-
-        UIManager.NetworkCommandFunctions.Add("MSStockpilerWindow", new UIManager.HandleNetworkCommand(MSStockpilerWindow.HandleNetworkCommand));
+        UIManager.NetworkCommandFunctions.Add("steveman0.MSStockpilerWindow", new UIManager.HandleNetworkCommand(MSStockpilerWindow.HandleNetworkCommand));
 
         return modRegistrationData;
     }
@@ -22,13 +23,10 @@ public class MSStockpilerMod : FortressCraftMod
     {
         ModCreateSegmentEntityResults result = new ModCreateSegmentEntityResults();
 
-        foreach (ModCubeMap cubeMap in ModManager.mModMappings.CubeTypes)
+        if (parameters.Cube == StockpilerType)
         {
-            if (cubeMap.CubeType == parameters.Cube)
-            {
-                if (cubeMap.Key.Equals("steveman0.MSStockpiler"))
-                    result.Entity = new MSStockpiler(parameters.Segment, parameters.X, parameters.Y, parameters.Z, parameters.Cube, parameters.Flags, parameters.Value, parameters.LoadFromDisk);
-            }
+            parameters.ObjectType = SpawnableObjectEnum.MassStorageInputPort;
+            result.Entity = new MSStockpiler(parameters);
         }
         return result;
     }

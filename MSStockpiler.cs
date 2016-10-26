@@ -46,15 +46,16 @@ public class MSStockpiler : MachineEntity, ItemConsumerInterface, ItemConfigurer
     public MSStockpilerWindow MachineWindow = new MSStockpilerWindow();
     public bool InventoryLock = false;
 
-    public MSStockpiler(Segment segment, long x, long y, long z, ushort cube, byte flags, ushort lValue, bool fromDisk)
-    : base(eSegmentEntity.Mod, SpawnableObjectEnum.MassStorageInputPort, x, y, z, cube, flags, lValue, Vector3.zero, segment)
+    public MSStockpiler(ModCreateSegmentEntityParameters parameters)
+    : base(parameters)
   {
         this.meState = MSStockpiler.eState.Unknown;
         this.mbNeedsLowFrequencyUpdate = true;
         this.mbNeedsUnityUpdate = true;
-        this.mForwards = SegmentCustomRenderer.GetRotationQuaternion(flags) * Vector3.forward;
+        this.mForwards = SegmentCustomRenderer.GetRotationQuaternion(parameters.Flags) * Vector3.forward;
         this.mForwards.Normalize();
         this.mrMaxSearchDistance = 1f;
+        ushort lValue = parameters.Value;
         if (lValue == MK1_Value)
             this.Tier = 1;
         else if (lValue == MK2_Value)
@@ -89,7 +90,7 @@ public class MSStockpiler : MachineEntity, ItemConsumerInterface, ItemConfigurer
         //UIUtil.EscapeUI();
 
         //Actual UI implementation
-        UIUtil.HandleThisMachineWindow(this, MachineWindow);
+        //UIUtil.HandleThisMachineWindow(this, MachineWindow);
 
         MSStockpiler port = (MSStockpiler)WorldScript.instance.localPlayerInstance.mPlayerBlockPicker.selectedEntity;
         string lstr1;
@@ -743,7 +744,7 @@ public class MSStockpiler : MachineEntity, ItemConsumerInterface, ItemConfigurer
 
     public override void UnityUpdate()
     {
-        UIUtil.DisconnectUI(this);
+        //UIUtil.DisconnectUI(this);
         if (!this.mbLinkedToGO)
         {
             if (this.mWrapper == null || this.mWrapper.mGameObjectList == null)
